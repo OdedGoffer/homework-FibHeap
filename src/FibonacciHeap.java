@@ -172,7 +172,7 @@ public class FibonacciHeap
 
 	public int key;
 
-  	public HeapNode(int key) {
+  	public HeapNode (int key) {
 	    this.key = key;
       }
 
