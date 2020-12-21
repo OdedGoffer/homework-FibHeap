@@ -1,3 +1,5 @@
+import java.util.LinkedList;
+
 /**
  * FibonacciHeap
  *
@@ -5,6 +7,14 @@
  */
 public class FibonacciHeap
 {
+
+    public HeapNode forestStart;
+    public HeapNode min;
+    public int size;
+    public int numOfTrees = 0;
+    public int marked = 0;
+    public static int totalLinks = 0;
+    public static int totalCuts = 0;
 
    /**
     * public boolean isEmpty()
@@ -17,7 +27,7 @@ public class FibonacciHeap
     */
     public boolean isEmpty()
     {
-    	return false; // should be replaced by student code
+    	return (this.forestStart == null);
     }
 		
    /**
@@ -52,7 +62,7 @@ public class FibonacciHeap
     */
     public HeapNode findMin()
     {
-    	return new HeapNode(0);// should be replaced by student code
+        return this.min;
     } 
     
    /**
@@ -74,7 +84,7 @@ public class FibonacciHeap
     */
     public int size()
     {
-    	return 0; // should be replaced by student code
+    	return this.size;
     }
     	
     /**
@@ -85,7 +95,7 @@ public class FibonacciHeap
     */
     public int[] countersRep()
     {
-	int[] arr = new int[42];
+	    int[] arr = new int[42];
         return arr; //	 to be replaced by student code
     }
 	
@@ -120,11 +130,11 @@ public class FibonacciHeap
     */
     public int potential() 
     {    
-    	return 0; // should be replaced by student code
+    	return numOfTrees + 2*marked;
     }
 
    /**
-    * public static int totalLinks() 
+    * public static int totalLinks()
     *
     * This static function returns the total number of link operations made during the run-time of the program.
     * A link operation is the operation which gets as input two trees of the same rank, and generates a tree of 
@@ -133,7 +143,7 @@ public class FibonacciHeap
     */
     public static int totalLinks()
     {    
-    	return 0; // should be replaced by student code
+    	return totalLinks;
     }
 
    /**
@@ -144,7 +154,7 @@ public class FibonacciHeap
     */
     public static int totalCuts()
     {    
-    	return 0; // should be replaced by student code
+    	return totalCuts;
     }
 
      /**
@@ -171,6 +181,13 @@ public class FibonacciHeap
     public class HeapNode{
 
 	public int key;
+	public String value;
+	public int rank;
+	public boolean mark;
+	public HeapNode child;
+	public  HeapNode next;
+	public  HeapNode prev;
+
 
   	public HeapNode (int key) {
 	    this.key = key;
