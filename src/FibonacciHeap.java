@@ -7,7 +7,6 @@ import java.util.LinkedList;
  */
 public class FibonacciHeap
 {
-
     public HeapNode forestStart;
     public HeapNode min;
     public int size;
@@ -15,6 +14,7 @@ public class FibonacciHeap
     public int marked = 0;
     public static int totalLinks = 0;
     public static int totalCuts = 0;
+    public int maxDegree;
 
    /**
     * public boolean isEmpty()
@@ -37,9 +37,26 @@ public class FibonacciHeap
     * 
     * Returns the new node created. 
     */
-    public HeapNode insert(int key)
-    {    
-    	return new HeapNode(key); // should be replaced by student code
+    public HeapNode insert(int key) {
+    	HeapNode node = new HeapNode(key);
+
+    	// pointers update ("addFirst")
+    	if (isEmpty()) {
+    	    node.next = node.prev = node;
+        } else {
+            node.prev = forestStart.prev;
+            node.next = forestStart;
+            forestStart.prev = node.prev.next = node;
+        }
+
+    	// tree variables update
+    	forestStart = node;
+    	if (min.key > key) {
+    	    min = node;
+        }
+    	numOfTrees++;
+    	size++;
+        return node;
     }
 
    /**
@@ -93,10 +110,14 @@ public class FibonacciHeap
     * Return a counters array, where the value of the i-th entry is the number of trees of order i in the heap. 
     * 
     */
-    public int[] countersRep()
-    {
-	    int[] arr = new int[42];
-        return arr; //	 to be replaced by student code
+    public int[] countersRep() {
+        int[] arr = new int[maxDegree+1];
+        HeapNode node = forestStart;
+        do {
+            arr[node.rank]++;
+            node = node.next;
+        } while (node != forestStart);
+        return arr;
     }
 	
    /**
