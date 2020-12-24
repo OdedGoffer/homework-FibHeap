@@ -1,4 +1,5 @@
 import java.util.LinkedList;
+import java.util.Stack;
 
 /**
  * FibonacciHeap
@@ -43,18 +44,11 @@ public class FibonacciHeap
     	// pointers update ("addFirst")
     	if (isEmpty()) {
     	    node.next = node.prev = node;
+    	    numOfTrees++;
+    	    forestStart = min = node;
         } else {
-            node.prev = forestStart.prev;
-            node.next = forestStart;
-            forestStart.prev = node.prev.next = node;
+            connectSubTree(node);
         }
-
-    	// tree variables update
-    	forestStart = node;
-    	if (min.key > key) {
-    	    min = node;
-        }
-    	numOfTrees++;
     	size++;
         return node;
     }
@@ -137,9 +131,23 @@ public class FibonacciHeap
     * The function decreases the key of the node x by delta. The structure of the heap should be updated
     * to reflect this chage (for example, the cascading cuts procedure should be applied if needed).
     */
-    public void decreaseKey(HeapNode x, int delta)
-    {    
-    	return; // should be replaced by student code
+    public void decreaseKey(HeapNode x, int delta) {
+
+        // if x is a root of a tree
+        if (x.parent == null) {
+            x.key -= delta;
+            if (x.key < min.key) {
+                min = x;
+            }
+        } else { // x has a parent
+            // x does not need to be cut off
+            if (x.key - delta > x.parent.key) {
+                x.key = x.key - delta;
+            } else { // x needs to be cut off
+                disconnectSubTree(x);
+                connectSubTree(x);
+            }
+        }
     }
 
    /**
@@ -190,6 +198,66 @@ public class FibonacciHeap
         int[] arr = new int[42];
         return arr; // should be replaced by student code
     }
+
+    // HELPER FUNCTIONS
+
+    // connecting from the left
+    // @pre - !isEmpty()
+    private void connectSubTree(HeapNode root) {
+        root.prev = forestStart.prev;
+        root.next = forestStart;
+        forestStart.prev = root.prev.next = root;
+        root.marked = false;
+
+        // tree variables update
+    	forestStart = root;
+    	if (min.key > root.key) {
+    	    min = root;
+        }
+    	numOfTrees++;
+    }
+
+    // @pre - node.parent != null
+    private void disconnectSubTree(HeapNode node) {
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+        node.next = node.prev = null;
+
+        if (node.parent.child == node) { // node is the first child
+            if (node.next != node) { // node is not the only child
+                node.parent.child = node.next;
+            } else {
+                node.parent.child = null;
+            }
+        }
+
+        rankUpdate(node.parent);
+        connectSubTree(node);
+        if (!node.parent.marked && node.parent.parent != null) { // node is not marked && not a root
+            node.parent.marked = true;
+        } else if (node.parent.parent != null) {
+            disconnectSubTree(node.parent);
+        }
+
+        node.parent = null;
+    }
+
+    // PROBLEM - not good enough complexity
+    private void rankUpdate(HeapNode node) {
+        if (node.child == null) {
+            node.rank = 0;
+        } else {
+            int rank = 0;
+            HeapNode child = node.child;
+            do {
+                if (child.rank + 1 > rank) {
+                    rank = child.rank + 1
+                }
+                child = child.next;
+            } while (child.next != node.child);
+            node.rank = rank;
+        }
+    }
     
    /**
     * public class HeapNode
@@ -204,7 +272,8 @@ public class FibonacciHeap
 	public int key;
 	public String value;
 	public int rank;
-	public boolean mark;
+	public boolean marked;
+	public HeapNode parent;
 	public HeapNode child;
 	public  HeapNode next;
 	public  HeapNode prev;
