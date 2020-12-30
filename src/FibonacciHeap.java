@@ -13,9 +13,9 @@ public class FibonacciHeap
     public int size;
     public int numOfTrees = 0;
     public int marked = 0;
-    public static int totalLinks = 0;
-    public static int totalCuts = 0;
-    public int maxDegree;
+    public static int TOTALLINKS = 0;
+    public static int TOTALCUTS = 0;
+    public int maxDegree = 0;
 
    /**
     * public boolean isEmpty()
@@ -39,18 +39,19 @@ public class FibonacciHeap
     * Returns the new node created. 
     */
     public HeapNode insert(int key) {
-    	HeapNode node = new HeapNode(key);
 
     	// pointers update ("addFirst")
     	if (isEmpty()) {
-    	    node.next = node.prev = node;
+    	    HeapNode node = new HeapNode(key);
+    	    node.next = node.prev = forestStart = min = node;
     	    numOfTrees++;
-    	    forestStart = min = node;
+    	    size++;
         } else {
-            connectSubTree(node);
+    	    FibonacciHeap heap = new FibonacciHeap();
+    	    heap.insert(key);
+            meld(heap);
         }
-    	size++;
-        return node;
+        return forestStart;
     }
 
    /**
@@ -82,9 +83,25 @@ public class FibonacciHeap
     * Meld the heap with heap2
     *
     */
-    public void meld (FibonacciHeap heap2)
+    public void meld (FibonacciHeap heap2) // heap2 is added at first
     {
-    	  return; // should be replaced by student code   		
+        HeapNode tmp = this.forestStart.prev;
+        heap2.forestStart.prev.next  = this.forestStart;
+        this.forestStart.prev = heap2.forestStart.prev;
+        heap2.forestStart.prev = tmp;
+        tmp.next = heap2.forestStart;
+
+        // tree variables update
+    	forestStart = heap2.forestStart;
+    	if (this.min.key > heap2.min.key) {
+    	    this.min = heap2.min;
+        }
+    	if (this.maxDegree < heap2.maxDegree) {
+    	    this.maxDegree = heap2.maxDegree;
+        }
+    	this.numOfTrees += heap2.numOfTrees;
+    	this.size += heap2.size();
+    	this.marked += heap2.marked;
     }
 
    /**
@@ -121,8 +138,10 @@ public class FibonacciHeap
     *
     */
     public void delete(HeapNode x) 
-    {    
-    	return; // should be replaced by student code
+    {
+        int minimalKey = this.min.key;
+        decreaseKey(x, x.key - minimalKey - 1);
+        deleteMin();
     }
 
    /**
@@ -140,12 +159,19 @@ public class FibonacciHeap
                 min = x;
             }
         } else { // x has a parent
+            HeapNode parent = x.parent;
             // x does not need to be cut off
             if (x.key - delta > x.parent.key) {
                 x.key = x.key - delta;
-            } else { // x needs to be cut off
-                disconnectSubTree(x);
-                connectSubTree(x);
+            } else do { // cascading-cuts
+                parent = disconnectSubTree(x);
+                FibonacciHeap heap = nodeToHeap(x);
+                meld(heap);
+                x = parent;
+                TOTALCUTS++;
+            } while (parent.marked); // @inv a root (root.parent == null) is never marked
+            if (parent.parent != null) { // parent is not a root
+                parent.marked = true;
             }
         }
     }
@@ -172,7 +198,7 @@ public class FibonacciHeap
     */
     public static int totalLinks()
     {    
-    	return totalLinks;
+    	return TOTALLINKS;
     }
 
    /**
@@ -183,7 +209,7 @@ public class FibonacciHeap
     */
     public static int totalCuts()
     {    
-    	return totalCuts;
+    	return TOTALCUTS;
     }
 
      /**
@@ -201,24 +227,9 @@ public class FibonacciHeap
 
     // HELPER FUNCTIONS
 
-    // connecting from the left
-    // @pre - !isEmpty()
-    private void connectSubTree(HeapNode root) {
-        root.prev = forestStart.prev;
-        root.next = forestStart;
-        forestStart.prev = root.prev.next = root;
-        root.marked = false;
-
-        // tree variables update
-    	forestStart = root;
-    	if (min.key > root.key) {
-    	    min = root;
-        }
-    	numOfTrees++;
-    }
-
     // @pre - node.parent != null
-    private void disconnectSubTree(HeapNode node) {
+    // @ret - node.parent (for cascading-cuts)
+    private HeapNode disconnectSubTree(HeapNode node) {
         node.prev.next = node.next;
         node.next.prev = node.prev;
         node.next = node.prev = null;
@@ -231,15 +242,12 @@ public class FibonacciHeap
             }
         }
 
+        // problem updating this.marked
         rankUpdate(node.parent);
-        connectSubTree(node);
-        if (!node.parent.marked && node.parent.parent != null) { // node is not marked && not a root
-            node.parent.marked = true;
-        } else if (node.parent.parent != null) {
-            disconnectSubTree(node.parent);
-        }
-
+        node.parent.size -= node.size;
+        HeapNode parent = node.parent;
         node.parent = null;
+        return parent;
     }
 
     // PROBLEM - not good enough complexity
@@ -251,15 +259,27 @@ public class FibonacciHeap
             HeapNode child = node.child;
             do {
                 if (child.rank + 1 > rank) {
-                    rank = child.rank + 1
+                    rank = child.rank + 1;
                 }
                 child = child.next;
             } while (child.next != node.child);
             node.rank = rank;
         }
     }
+
+    // Node pointer ---> Heap pointer (for melding)
+    // problem updating this.marked
+    private FibonacciHeap nodeToHeap(HeapNode node) {
+        FibonacciHeap heap = new FibonacciHeap();
+        heap.forestStart = heap.min = node.next = node.prev = node;
+        heap.maxDegree = node.rank;
+        heap.size = node.size;
+        heap.numOfTrees++;
+        node.marked = false;
+        return heap;
+    }
     
-   /**
+   /*
     * public class HeapNode
     * 
     * If you wish to implement classes other than FibonacciHeap
@@ -275,9 +295,9 @@ public class FibonacciHeap
 	public boolean marked;
 	public HeapNode parent;
 	public HeapNode child;
-	public  HeapNode next;
-	public  HeapNode prev;
-
+	public HeapNode next;
+	public HeapNode prev;
+	public int size=1;
 
   	public HeapNode (int key) {
 	    this.key = key;
