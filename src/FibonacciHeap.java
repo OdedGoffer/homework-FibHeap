@@ -47,7 +47,7 @@ public class FibonacciHeap
         } else {
     	    FibonacciHeap heap = new FibonacciHeap();
     	    heap.insert(key);
-            meld(heap);
+            this.meld(heap);
         }
         return forestStart;
     }
@@ -83,6 +83,9 @@ public class FibonacciHeap
     */
     public void meld (FibonacciHeap heap2) // heap2 is added at first
     {
+        if (heap2.isEmpty()){
+            return;
+        }
         internalMeld(heap2);
         // tree variables update
     	this.numOfTrees += heap2.numOfTrees;
@@ -91,6 +94,11 @@ public class FibonacciHeap
     }
 
     private void internalMeld (FibonacciHeap heap2) {
+        if (this.isEmpty()){
+            forestStart = heap2.forestStart;
+            this.min = heap2.min;
+            return;
+        }
         HeapNode tmp = this.forestStart.prev;
         heap2.forestStart.prev.next  = this.forestStart;
         this.forestStart.prev = heap2.forestStart.prev;
@@ -102,7 +110,6 @@ public class FibonacciHeap
     	if (this.min.key > heap2.min.key) {
     	    this.min = heap2.min;
         }
-    	numOfTrees++;
     }
 
    /**
@@ -168,11 +175,13 @@ public class FibonacciHeap
                 parent = disconnectSubTree(x);
                 FibonacciHeap heap = nodeToHeap(x);
                 internalMeld(heap);
+                this.numOfTrees++;
                 x = parent;
                 TOTALCUTS++;
             } while (parent.marked); // @inv a root (root.parent == null) is never marked
             if (parent.parent != null) { // parent is not a root
                 parent.marked = true;
+                this.marked++;
             }
         }
     }
@@ -222,8 +231,7 @@ public class FibonacciHeap
     */
     public static int[] kMin(FibonacciHeap H, int k)
     {    
-        int[] arr = new int[42];
-        return arr; // should be replaced by student code
+        return null;
     }
 
     // HELPER FUNCTIONS
@@ -243,27 +251,10 @@ public class FibonacciHeap
             }
         }
 
-        rankUpdate(node.parent);
+        node.parent.rank--;
         HeapNode parent = node.parent;
         node.parent = null;
         return parent;
-    }
-
-    // PROBLEM - not good enough complexity
-    private void rankUpdate(HeapNode node) {
-        if (node.child == null) {
-            node.rank = 0;
-        } else {
-            int rank = 0;
-            HeapNode child = node.child;
-            do {
-                if (child.rank + 1 > rank) {
-                    rank = child.rank + 1;
-                }
-                child = child.next;
-            } while (child.next != node.child);
-            node.rank = rank;
-        }
     }
 
     // Node pointer ---> Heap pointer (for melding)
@@ -272,6 +263,7 @@ public class FibonacciHeap
         FibonacciHeap heap = new FibonacciHeap();
         heap.forestStart = heap.min = node.next = node.prev = node;
         node.marked = false;
+        this.marked--;
         return heap;
     }
     
