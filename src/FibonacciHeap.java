@@ -1,5 +1,4 @@
-import java.util.LinkedList;
-import java.util.Stack;
+import java.util.Arrays;
 
 /**
  * FibonacciHeap
@@ -15,7 +14,6 @@ public class FibonacciHeap
     public int marked = 0;
     public static int TOTALLINKS = 0;
     public static int TOTALCUTS = 0;
-    public int maxDegree = 0;
 
    /**
     * public boolean isEmpty()
@@ -85,6 +83,14 @@ public class FibonacciHeap
     */
     public void meld (FibonacciHeap heap2) // heap2 is added at first
     {
+        internalMeld(heap2);
+        // tree variables update
+    	this.numOfTrees += heap2.numOfTrees;
+    	this.size += heap2.size();
+    	this.marked += heap2.marked;
+    }
+
+    private void internalMeld (FibonacciHeap heap2) {
         HeapNode tmp = this.forestStart.prev;
         heap2.forestStart.prev.next  = this.forestStart;
         this.forestStart.prev = heap2.forestStart.prev;
@@ -96,12 +102,7 @@ public class FibonacciHeap
     	if (this.min.key > heap2.min.key) {
     	    this.min = heap2.min;
         }
-    	if (this.maxDegree < heap2.maxDegree) {
-    	    this.maxDegree = heap2.maxDegree;
-        }
-    	this.numOfTrees += heap2.numOfTrees;
-    	this.size += heap2.size();
-    	this.marked += heap2.marked;
+    	numOfTrees++;
     }
 
    /**
@@ -122,7 +123,7 @@ public class FibonacciHeap
     * 
     */
     public int[] countersRep() {
-        int[] arr = new int[maxDegree+1];
+        int[] arr = new int[(int) (Math.log(this.size))+1];
         HeapNode node = forestStart;
         do {
             arr[node.rank]++;
@@ -166,7 +167,7 @@ public class FibonacciHeap
             } else do { // cascading-cuts
                 parent = disconnectSubTree(x);
                 FibonacciHeap heap = nodeToHeap(x);
-                meld(heap);
+                internalMeld(heap);
                 x = parent;
                 TOTALCUTS++;
             } while (parent.marked); // @inv a root (root.parent == null) is never marked
@@ -242,9 +243,7 @@ public class FibonacciHeap
             }
         }
 
-        // problem updating this.marked
         rankUpdate(node.parent);
-        node.parent.size -= node.size;
         HeapNode parent = node.parent;
         node.parent = null;
         return parent;
@@ -268,13 +267,10 @@ public class FibonacciHeap
     }
 
     // Node pointer ---> Heap pointer (for melding)
-    // problem updating this.marked
+    // ONLY USE WITH INTERNAL MELD - variables not updated
     private FibonacciHeap nodeToHeap(HeapNode node) {
         FibonacciHeap heap = new FibonacciHeap();
         heap.forestStart = heap.min = node.next = node.prev = node;
-        heap.maxDegree = node.rank;
-        heap.size = node.size;
-        heap.numOfTrees++;
         node.marked = false;
         return heap;
     }
@@ -297,7 +293,6 @@ public class FibonacciHeap
 	public HeapNode child;
 	public HeapNode next;
 	public HeapNode prev;
-	public int size=1;
 
   	public HeapNode (int key) {
 	    this.key = key;
