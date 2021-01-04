@@ -64,7 +64,7 @@ public class FibonacciHeap
     public void deleteMin()
     {
 
-        this.buckets = new HeapNode[(int)(Math.log(size)/Math.log(2)) + 1]; //create empty array of buckets
+        this.buckets = new HeapNode[(int)(Math.log(size)/Math.log(2))*2]; //create empty array of buckets
         HeapNode children = remove(min); //pointer to start of children
         numOfTrees += concat(children); //add all children of min to forrest
         successiveLink();
@@ -76,7 +76,7 @@ public class FibonacciHeap
         HeapNode parent = forestStart;
         int links = 0;
         do{
-            HeapNode prev = parent; //iterate to next tree before chaning pointers
+            HeapNode prev = parent; //iterate to next tree before changing pointers
             parent = parent.next;
             links += link(prev,0);
         }while(parent != forestStart);
