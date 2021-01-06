@@ -6,25 +6,35 @@ public class Tester {
 
         FibonacciHeap heap = new FibonacciHeap();
 
-        int[] numbers = {10,9,8,7,6,5,4};
+        int[] numbers = new int[1234567];
+
+        for(int i = 0; i < 1234567; i++){
+            numbers[i] = i;
+        }
+
+        print("inserting numbers from 0 to 1234567...");
 
         for(int i : numbers){
             heap.insert(i);
         }
 
+        print("Min key(should be 0):");
         print(heap.min.key);
+        print("Deleting first 700 numbers:");
 
-        heap.deleteMin();
-        print(heap.min.key);
-
-        int[] numbers2 = {1,2,33,44};
-        for(int i : numbers2){
-            heap.insert(i);
+        for(int i = 0; i < 700; i++){
+            heap.deleteMin();
         }
-        heap.deleteMin();
+
+        print("Min key(should be 700):");
         print(heap.min.key);
-        print(heap.size);
-        print(heap.numOfTrees);
+
+
+        print("The first 100 numbers are:");
+        int[] numbers2 = FibonacciHeap.kMin(heap, 49);
+        for(int i : numbers2){
+            print(i);
+        }
 
 
 

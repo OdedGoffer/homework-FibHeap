@@ -1,7 +1,5 @@
 package FibonacciHeap;
 
-import java.util.Arrays;
-
 /**
  * FibonacciHeap
  *
@@ -64,121 +62,10 @@ public class FibonacciHeap
     public void deleteMin()
     {
 
-        this.buckets = new HeapNode[(int)(Math.log(size)/Math.log(2))*2]; //create empty array of buckets
+        buckets = new HeapNode[(int)(Math.log(size)/Math.log(2))*2]; //create empty array of buckets
         HeapNode children = remove(min); //pointer to start of children
-        numOfTrees += concat(children); //add all children of min to forrest
+        numOfTrees += concat(children); //add all children of min to forest
         successiveLink();
-
-     	return;
-    }
-
-    private void successiveLink(){ //successively link heap
-        HeapNode parent = forestStart;
-        int links = 0;
-        do{
-            HeapNode prev = parent; //iterate to next tree before changing pointers
-            parent = parent.next;
-            links += link(prev,0);
-        }while(parent != forestStart);
-        resetPointers(); //make forrest right again
-    }
-
-    private int link(HeapNode node, int links){//recursively link trees
-        int bucket = node.rank;
-
-        if (buckets[bucket] == null) {
-            buckets[bucket] = node;
-            return links + 0;
-        }
-        HeapNode father = buckets[bucket];
-        HeapNode son = node;
-
-        if(father.key > node.key){
-            father = node;
-            son = buckets[bucket];
-        }
-        //join em up
-        father.link(son);
-        //fix the stuff
-        buckets[bucket] = null;
-        links++;
-        TOTALLINKS++;
-        numOfTrees--;
-        return link(father, links);
-    }
-
-    private void resetPointers(){ //create new linked list from buckets
-        forestStart = null;
-        min = null;
-        HeapNode last = null;
-        for(HeapNode node: buckets){
-           if( node != null){
-               if(forestStart == null){
-                   forestStart = node;
-                   min = node;
-                   last = node;
-                   continue;
-               }
-               if(node.key < min.key){
-                   min = node;
-               }
-               last.next = node;
-               node.prev = last;
-               last = node;
-           }
-        }
-        forestStart.prev = last;
-        last.next = forestStart;
-    }
-
-    public HeapNode remove(HeapNode node){ // remove tree from forrest and return pointer to child node
-
-        if(node == null){ //do nothing if heap is empty
-            return null;
-        }
-        size--;
-        HeapNode prev = node.prev;
-        if(node == prev){ //if tree is only node
-            forestStart = null;
-        } else {
-            if (node == forestStart){
-                forestStart = forestStart.next;
-            }
-            prev.next = node.next;
-            prev.next.prev = prev;
-            node.next = node.prev = node;
-        }
-        numOfTrees--;
-        return node.child;
-    }
-
-    public int concat(HeapNode nodeList){   //accepts pointer to start of list, adds list to forrest and returns number
-                                            // of nodes added
-
-        if (nodeList == null){
-            return 0;
-        }
-        //fix pointers
-        nodeList.parent = null;
-        nodeList.prev = forestStart.prev;
-        forestStart.prev.next = nodeList;
-
-        HeapNode node = nodeList;
-        int numOfNodes = 0;
-        do { //make all nodes unmarked, count them and fix pointers
-            if(node.marked){ //unmark
-                node.marked = false;
-                marked--;
-            }
-            numOfNodes++; //count
-            if(node.next == nodeList){
-                node.next = forestStart;
-                forestStart.prev = node;
-            }
-            node = node.next;
-        }while (node != forestStart);
-
-        return numOfNodes;
     }
 
    /**
@@ -208,25 +95,6 @@ public class FibonacciHeap
     	this.numOfTrees += heap2.numOfTrees;
     	this.size += heap2.size();
     	this.marked += heap2.marked;
-    }
-
-    private void internalMeld (FibonacciHeap heap2) {
-        if (this.isEmpty()){
-            forestStart = heap2.forestStart;
-            this.min = heap2.min;
-            return;
-        }
-        HeapNode tmp = this.forestStart.prev;
-        heap2.forestStart.prev.next  = this.forestStart;
-        this.forestStart.prev = heap2.forestStart.prev;
-        heap2.forestStart.prev = tmp;
-        tmp.next = heap2.forestStart;
-
-        // tree variables update
-    	forestStart = heap2.forestStart;
-    	if (this.min.key > heap2.min.key) {
-    	    this.min = heap2.min;
-        }
     }
 
    /**
@@ -348,18 +216,195 @@ public class FibonacciHeap
     */
     public static int[] kMin(FibonacciHeap H, int k)
     {    
-        return null;
+        treeList[] treeListArr = new treeList[(int)(Math.log(H.size)/Math.log(2)) + 1];
+        int[] minArr = new int[k];
+        HeapNode node = H.forestStart;
+        do{
+            assert treeListArr[node.rank] == null;
+            treeListArr[node.rank] = new treeList(node);
+            node = node.next;
+        }while (node != H.forestStart);
+        for (int i = 0; i<k; i++){
+            minArr[i] = getMin(treeListArr);
+        }
+
+        return minArr;
+    }
+
+    private static int getMin(treeList[] treeListArr){
+        treeList min = null;
+        for(treeList tree: treeListArr){
+            if(tree == null) continue;
+            if(min == null) min = tree;
+            if(tree.getMinKey() < min.getMinKey()){
+                min = tree;
+            }
+        }
+        treeListArr[min.rank] = null;
+        LinkArray(treeListArr, min);
+        return min.getMinKey();
+    }
+
+    private static void LinkArray(treeList[] treeListArr, treeList min){
+        HeapNode node = min.getChildren();
+        if(node == null) return;
+        do{
+            treeList tree = new treeList(node);
+            pushToArray(treeListArr, tree);
+            node = node.next;
+        }while (node != min.getChildren());
+        while(min.hasNext()){
+            treeList tree = min.getNext();
+            pushToArray(treeListArr, tree);
+        }
+    }
+
+    private static void pushToArray(treeList[] treeListArr, treeList tree){
+
+        int i = tree.rank;
+
+        if(treeListArr[i] == null){
+            treeListArr[i] = tree;
+            return;
+        }
+        tree.insert(treeListArr[i]);
+        treeListArr[i] = null;
+        pushToArray(treeListArr, tree);
     }
 
     // HELPER FUNCTIONS
 
+    private void successiveLink(){ //successively link heap
+        HeapNode nextRoot = forestStart;
+        do{
+            HeapNode prevRoot = nextRoot; //iterate to next tree before changing pointers
+            nextRoot = nextRoot.next;
+            link(prevRoot);
+        }while(nextRoot != forestStart);
+        resetPointers(); //make forrest right again
+    }
+
+    private void link(HeapNode node){//recursively link trees
+        int bucket = node.rank;
+
+        if (buckets[bucket] == null) {
+            buckets[bucket] = node;
+            return;
+        }
+
+        HeapNode father = buckets[bucket];
+        HeapNode son = node;
+
+        if(father.key > node.key){
+            father = node;
+            son = buckets[bucket];
+        }
+        //join em up
+        father.makeSon(son);
+        //fix the stuff
+        buckets[bucket] = null;
+        TOTALLINKS++;
+        numOfTrees--;
+        link(father);
+    }
+
+    private void resetPointers(){ //create new linked list from buckets
+        forestStart = null;
+        min = null;
+        HeapNode last = null;
+        for(HeapNode node: buckets){
+           if( node != null){
+               if(forestStart == null){
+                   forestStart = node;
+                   min = node;
+                   last = node;
+                   continue;
+               }
+               if(node.key < min.key){
+                   min = node;
+               }
+               last.next = node;
+               node.prev = last;
+               last = node;
+           }
+        }
+        if (forestStart != null) forestStart.prev = last;
+        if (last != null) last.next = forestStart;
+    }
+
+    public HeapNode remove(HeapNode node){ // remove tree from forrest and return pointer to child node
+
+        if(node == null){ //do nothing if heap is empty
+            return null;
+        }
+        size--;
+        HeapNode prev = node.prev;
+        if(node == prev){ //if tree is only node
+            forestStart = null;
+        } else {
+            if (node == forestStart){
+                forestStart = forestStart.next;
+            }
+            prev.next = node.next;
+            prev.next.prev = prev;
+            node.next = node.prev = node;
+        }
+        numOfTrees--;
+        return node.child;
+    }
+
+    public int concat(HeapNode nodeList){   //accepts pointer to start of list, adds list to forest and returns number
+                                            // of nodes added
+
+        if (nodeList == null){
+            return 0;
+        }
+        //fix pointers
+        nodeList.parent = null;
+        nodeList.prev = forestStart.prev;
+        forestStart.prev.next = nodeList;
+
+        HeapNode node = nodeList;
+        int numOfNodes = 0;
+        do { //make all nodes unmarked, count them and fix pointers
+            node.parent = null; // set all parents to null
+            if(node.marked){ //un-mark
+                node.marked = false;
+                marked--;
+            }
+            numOfNodes++; //count
+            if(node.next == nodeList){
+                node.next = forestStart;
+                forestStart.prev = node;
+            }
+            node = node.next;
+        }while (node != forestStart);
+
+        return numOfNodes;
+    }
+
+    private void internalMeld (FibonacciHeap heap2) {
+        if (this.isEmpty()){
+            forestStart = heap2.forestStart;
+            this.min = heap2.min;
+            return;
+        }
+        HeapNode tmp = this.forestStart.prev;
+        heap2.forestStart.prev.next  = this.forestStart;
+        this.forestStart.prev = heap2.forestStart.prev;
+        heap2.forestStart.prev = tmp;
+        tmp.next = heap2.forestStart;
+
+        // tree variables update
+    	forestStart = heap2.forestStart;
+    	if (this.min.key > heap2.min.key) {
+    	    this.min = heap2.min;
+        }
+    }
+
     // @pre - node.parent != null
     // @ret - node.parent (for cascading-cuts)
     private HeapNode disconnectSubTree(HeapNode node) {
-        node.prev.next = node.next;
-        node.next.prev = node.prev;
-        node.next = node.prev = null;
-
         if (node.parent.child == node) { // node is the first child
             if (node.next != node) { // node is not the only child
                 node.parent.child = node.next;
@@ -367,6 +412,11 @@ public class FibonacciHeap
                 node.parent.child = null;
             }
         }
+
+        //fix pointers
+        node.prev.next = node.next;
+        node.next.prev = node.prev;
+        node.next = node.prev = null;
 
         node.parent.rank--;
         HeapNode parent = node.parent;
@@ -403,21 +453,26 @@ public class FibonacciHeap
 	public HeapNode next;
 	public HeapNode prev;
 
-  	public HeapNode (int key) {
+	public HeapNode (int key) {
 	    this.key = key;
+	    this.value = null;
+    }
+
+  	public HeapNode (int key, String value) {
+	    this.key = key;
+	    this.value = value;
       }
 
-    public void link(HeapNode other){
+    public void makeSon(HeapNode other){
   	    if (child == null){
             child = other.next = other.prev = other;
         } else {
-            other.parent =
             other.next = child;
             other.prev = child.prev;
-            child.prev.next = other;
-            child.prev = other;
+            child.prev.next = child.prev = other;
             child = other;
         }
+  	    other.parent = this;
   	    rank++;
     }
 
@@ -426,4 +481,61 @@ public class FibonacciHeap
       }
 
     }
+
+    private static class treeList {
+        public int rank = 0;
+        public treeListNode min;
+        public treeListNode last;
+
+        public treeList(HeapNode root){
+            this.min = new treeListNode(root);
+            this.last = this.min;
+            this.rank = root.rank;
+        }
+
+        public void insert(treeList tree){
+            if(tree.getMinKey() >= min.node.key){
+                last.setNext(tree.min);
+                last = tree.last;
+             } else {
+                tree.last.setNext(min);
+                min = tree.min;
+            }
+            rank++;
+        }
+
+        public int getMinKey() {
+            return min.node.key;
+        }
+
+        public HeapNode getChildren(){
+            return min.node.child;
+        }
+
+        public boolean hasNext(){
+            return (min.next != null);
+        }
+
+        public treeList getNext(){
+            treeListNode next = min.next;
+            treeList nextTree = new treeList(next.node);
+            return nextTree;
+        }
+    }
+
+    private static class treeListNode{
+
+        HeapNode node;
+        treeListNode next = null;
+
+        public treeListNode(HeapNode node){
+            this.node = node;
+        }
+
+        public void setNext(treeListNode node){
+            this.next = node;
+        }
+
+    }
+
 }
