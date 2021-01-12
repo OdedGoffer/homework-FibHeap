@@ -370,7 +370,6 @@ public class FibonacciHeap
             HeapNode tmp = node.next;
             FibonacciHeap heap = nodeToHeap(node);
             internalMeld(heap);
-            numOfTrees++;
             node = tmp;
         } while (node != nodeList);
 
