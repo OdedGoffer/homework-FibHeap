@@ -114,7 +114,7 @@ public class FibonacciHeap
     * 
     */
     public int[] countersRep() {
-        int[] arr = new int[(int) (Math.log(this.size))+1];
+        int[] arr = new int[(int) (Math.log(size)/Math.log(2))*2];
         HeapNode node = forestStart;
         do {
             arr[node.rank]++;
@@ -153,7 +153,7 @@ public class FibonacciHeap
         } else { // x has a parent
             HeapNode parent = x.parent;
             // x does not need to be cut off
-            if (x.key > x.parent.key) {
+            if (x.key < x.parent.key) {
                 do { // cascading-cuts
                 parent = disconnectSubTree(x);
                 FibonacciHeap heap = nodeToHeap(x);

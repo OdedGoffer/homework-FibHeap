@@ -32,7 +32,7 @@ public class Test {
         try {test14();} catch (Exception e){bugFound("test14");}
         try {test15();} catch (Exception e){bugFound("test15");}
         try {test16();} catch (Exception e){bugFound("test16");}
-        try {test17();} catch (Exception e){bugFound("test17");}
+        test17();
         try {test18();} catch (Exception e){bugFound("test18");}
         try {test19();} catch (Exception e){bugFound("test19");}
         try {test20();} catch (Exception e){bugFound("test20");}
@@ -86,7 +86,7 @@ public class Test {
             heap.deleteMin();
             fibonacciHeap.deleteMin();
         }
-        if (!fibonacciHeap.isEmpty());
+        if (!fibonacciHeap.isEmpty())
             bugFound(test);
     }
 
