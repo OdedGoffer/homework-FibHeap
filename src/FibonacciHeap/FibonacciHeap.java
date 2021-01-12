@@ -275,6 +275,11 @@ public class FibonacciHeap
 
     private void successiveLink(){ //successively link heap
         HeapNode nextRoot = forestStart;
+        if (forestStart == null) {
+            min = null;
+            size = numOfTrees = 0;
+            return;
+        }
         do{
             HeapNode prevRoot = nextRoot; //iterate to next tree before changing pointers
             nextRoot = nextRoot.next;
