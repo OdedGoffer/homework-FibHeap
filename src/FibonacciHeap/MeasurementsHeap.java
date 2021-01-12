@@ -186,7 +186,5 @@ public class MeasurementsHeap {
         for (int i = 0; i< m/2 ; i++){
             heap.deleteMin();
         }
-        Tester.print(heap.marked);
-        Tester.print(heap.numOfTrees);
     }
 }

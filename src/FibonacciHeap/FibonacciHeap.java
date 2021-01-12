@@ -422,8 +422,10 @@ public class FibonacciHeap
     private FibonacciHeap nodeToHeap(HeapNode node) {
         FibonacciHeap heap = new FibonacciHeap();
         heap.forestStart = heap.min = node.next = node.prev = node;
-        node.marked = false;
-        this.marked--;
+        if (node.marked) {
+            node.marked = false;
+            this.marked--;
+        }
         return heap;
     }
     
