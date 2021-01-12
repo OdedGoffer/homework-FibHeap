@@ -61,7 +61,6 @@ public class FibonacciHeap
     */
     public void deleteMin()
     {
-
         buckets = new HeapNode[(int)(Math.log(size)/Math.log(2))*2]; //create empty array of buckets
         HeapNode children = remove(min); //pointer to start of children
         numOfTrees += concat(children); //add all children of min to forest
@@ -160,8 +159,8 @@ public class FibonacciHeap
                 parent = disconnectSubTree(x);
                 FibonacciHeap heap = nodeToHeap(x);
                 internalMeld(heap);
-                this.numOfTrees++;
                 x = parent;
+                numOfTrees++;
                 TOTALCUTS++;
             } while (parent.marked); // @inv a root (root.parent == null) is never marked
             if (parent.parent != null) { // parent is not a root
@@ -355,30 +354,25 @@ public class FibonacciHeap
 
     public int concat(HeapNode nodeList){   //accepts pointer to start of list, adds list to forest and returns number
                                             // of nodes added
-
         if (nodeList == null){
             return 0;
         }
         //fix pointers
-        nodeList.parent = null;
-        nodeList.prev = forestStart.prev;
-        forestStart.prev.next = nodeList;
-
         HeapNode node = nodeList;
         int numOfNodes = 0;
-        do { //make all nodes unmarked, count them and fix pointers
+        do {
             node.parent = null; // set all parents to null
             if(node.marked){ //un-mark
                 node.marked = false;
                 marked--;
             }
             numOfNodes++; //count
-            if(node.next == nodeList){
-                node.next = forestStart;
-                forestStart.prev = node;
-            }
-            node = node.next;
-        }while (node != forestStart);
+            HeapNode tmp = node.next;
+            FibonacciHeap heap = nodeToHeap(node);
+            internalMeld(heap);
+            numOfTrees++;
+            node = tmp;
+        } while (node != nodeList);
 
         return numOfNodes;
     }
@@ -387,8 +381,8 @@ public class FibonacciHeap
         if (this.isEmpty()){
             forestStart = heap2.forestStart;
             this.min = heap2.min;
-            return;
         }
+
         HeapNode tmp = this.forestStart.prev;
         heap2.forestStart.prev.next  = this.forestStart;
         this.forestStart.prev = heap2.forestStart.prev;
@@ -416,7 +410,7 @@ public class FibonacciHeap
         //fix pointers
         node.prev.next = node.next;
         node.next.prev = node.prev;
-        node.next = node.prev = null;
+        node.next = node.prev = node;
 
         node.parent.rank--;
         HeapNode parent = node.parent;

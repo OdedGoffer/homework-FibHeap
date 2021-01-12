@@ -32,12 +32,9 @@ public class Tester {
 
         print("The first 100 numbers are:");
         int[] numbers2 = FibonacciHeap.kMin(heap, 49);
-        for(int i : numbers2){
+        for(int i : numbers2) {
             print(i);
         }
-
-
-
     }
 
 
