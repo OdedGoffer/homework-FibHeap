@@ -16,13 +16,13 @@ public class Test {
         testScore = grade / 29;
 
         try {test0();} catch (Exception e){bugFound("test0");}
-        try {test1();} catch (Exception e){bugFound("test1");}
+        test1();
         try {test2();} catch (Exception e){bugFound("test2");}
         try {test3();} catch (Exception e){bugFound("test3");}
         try {test4();} catch (Exception e){bugFound("test4");}
         try {test5();} catch (Exception e){bugFound("test5");}
         try {test6();} catch (Exception e){bugFound("test6");}
-        try {test7();} catch (Exception e){bugFound("test7");}
+        test7();
         try {test8();} catch (Exception e){bugFound("test8");}
         try {test9();} catch (Exception e){bugFound("test9");}
         try {test10();} catch (Exception e){bugFound("test10");}
@@ -86,7 +86,7 @@ public class Test {
             heap.deleteMin();
             fibonacciHeap.deleteMin();
         }
-        if (!fibonacciHeap.isEmpty())
+        if (!fibonacciHeap.isEmpty());
             bugFound(test);
     }
 

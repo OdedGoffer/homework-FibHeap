@@ -132,7 +132,7 @@ public class FibonacciHeap
     public void delete(HeapNode x) 
     {
         int minimalKey = this.min.key;
-        decreaseKey(x, x.key - minimalKey - 1);
+        decreaseKey(x, x.key - minimalKey + 1);
         deleteMin();
     }
 
@@ -144,28 +144,28 @@ public class FibonacciHeap
     */
     public void decreaseKey(HeapNode x, int delta) {
 
+        x.key -= delta;
         // if x is a root of a tree
         if (x.parent == null) {
-            x.key -= delta;
             if (x.key < min.key) {
                 min = x;
             }
         } else { // x has a parent
             HeapNode parent = x.parent;
             // x does not need to be cut off
-            if (x.key - delta > x.parent.key) {
-                x.key = x.key - delta;
-            } else do { // cascading-cuts
+            if (x.key > x.parent.key) {
+                do { // cascading-cuts
                 parent = disconnectSubTree(x);
                 FibonacciHeap heap = nodeToHeap(x);
                 internalMeld(heap);
                 x = parent;
                 numOfTrees++;
                 TOTALCUTS++;
-            } while (parent.marked); // @inv a root (root.parent == null) is never marked
-            if (parent.parent != null) { // parent is not a root
-                parent.marked = true;
-                this.marked++;
+                } while (parent.marked); // @inv a root (root.parent == null) is never marked
+                if (parent.parent != null) { // parent is not a root
+                    parent.marked = true;
+                    this.marked++;
+                }
             }
         }
     }
