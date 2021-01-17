@@ -25,7 +25,7 @@ public class MeasurementsHeap {
         FibonacciHeap heap1 = new FibonacciHeap();
 
         startTime = System.nanoTime();
-        sequence1(heap1, 10);
+        sequence1(heap1, 4);
         stopTime = System.nanoTime();
 
         System.out.println("Results for k = 10:");

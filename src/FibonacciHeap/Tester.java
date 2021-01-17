@@ -6,11 +6,8 @@ public class Tester {
 
         FibonacciHeap heap = new FibonacciHeap();
 
-        int[] numbers = new int[1234567];
+        int[] numbers = {45,36,67,35,76,34,722,344,1,40,333,7,9012,2223,25,26,27,28,29,99,98,97,96,95,94,93,92,91};
 
-        for(int i = 0; i < 1234567; i++){
-            numbers[i] = i;
-        }
 
         print("inserting numbers from 0 to 1234567...");
 
@@ -22,16 +19,16 @@ public class Tester {
         print(heap.min.key);
         print("Deleting first 700 numbers:");
 
-        for(int i = 0; i < 700; i++){
-            heap.deleteMin();
-        }
+
+        heap.deleteMin();
+
 
         print("Min key(should be 700):");
         print(heap.min.key);
 
 
-        print("The first 100 numbers are:");
-        int[] numbers2 = FibonacciHeap.kMin(heap, 49);
+        print("The first 7 numbers are:");
+        int[] numbers2 = FibonacciHeap.kMin(heap, 7);
         for(int i : numbers2) {
             print(i);
         }

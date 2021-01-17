@@ -215,60 +215,69 @@ public class FibonacciHeap
     */
     public static int[] kMin(FibonacciHeap H, int k)
     {    
-        treeList[] treeListArr = new treeList[(int)(Math.log(H.size)/Math.log(2)) + 1];
+        fakeNode[] fakeNodeArr = new fakeNode[(int)(Math.log(H.size)/Math.log(2)) + 1];
         int[] minArr = new int[k];
         HeapNode node = H.forestStart;
         do{
-            assert treeListArr[node.rank] == null;
-            treeListArr[node.rank] = new treeList(node);
+            assert fakeNodeArr[node.rank] == null;
+            fakeNodeArr[node.rank] = new fakeNode(node);
             node = node.next;
         }while (node != H.forestStart);
         for (int i = 0; i<k; i++){
-            minArr[i] = getMin(treeListArr);
+            minArr[i] = getMin(fakeNodeArr);
         }
 
         return minArr;
     }
 
-    private static int getMin(treeList[] treeListArr){
-        treeList min = null;
-        for(treeList tree: treeListArr){
-            if(tree == null) continue;
-            if(min == null) min = tree;
-            if(tree.getMinKey() < min.getMinKey()){
-                min = tree;
+    private static int getMin(fakeNode[] fakeNodeArr){
+        fakeNode min = null;
+        for(fakeNode node: fakeNodeArr){
+            if(node == null) continue;
+            if(min == null) min = node;
+            if(node.getMinKey() < min.getMinKey()){
+                min = node;
             }
         }
-        treeListArr[min.rank] = null;
-        LinkArray(treeListArr, min);
+        fakeNodeArr[min.rank] = null;
+        LinkArray(fakeNodeArr, min);
         return min.getMinKey();
     }
 
-    private static void LinkArray(treeList[] treeListArr, treeList min){
-        HeapNode node = min.getChildren();
-        if(node == null) return;
-        do{
-            treeList tree = new treeList(node);
-            pushToArray(treeListArr, tree);
-            node = node.next;
-        }while (node != min.getChildren());
-        while(min.hasNext()){
-            treeList tree = min.getNext();
-            pushToArray(treeListArr, tree);
+    private static void LinkArray(fakeNode[] fakeNodeArr, fakeNode min){
+        HeapNode child = min.getRealChildren();
+        if(child != null) {
+            do {
+                fakeNode fakeNode = new fakeNode(child);
+                pushToArray(fakeNodeArr, fakeNode);
+                child = child.next;
+            } while (child != min.getRealChildren());
+        }
+        fakeNode fakeChild = min.getFakeChildren();
+        while (fakeChild != null){
+            pushToArray(fakeNodeArr, fakeChild);
+            fakeChild = fakeChild.fakeNext;
         }
     }
 
-    private static void pushToArray(treeList[] treeListArr, treeList tree){
+    private static void pushToArray(fakeNode[] fakeNodeArr, fakeNode node){
 
-        int i = tree.rank;
+        int i = node.rank;
 
-        if(treeListArr[i] == null){
-            treeListArr[i] = tree;
+        if(fakeNodeArr[i] == null){
+            fakeNodeArr[i] = node;
             return;
         }
-        tree.insert(treeListArr[i]);
-        treeListArr[i] = null;
-        pushToArray(treeListArr, tree);
+        fakeNode father = fakeNodeArr[i];
+        fakeNode son = node;
+
+        if (son.getMinKey() < father.getMinKey()){
+            son = fakeNodeArr[i];
+            father = node;
+        }
+        father.makeSon(son);
+        fakeNodeArr[i] = null;
+        pushToArray(fakeNodeArr, father);
     }
 
     // HELPER FUNCTIONS
@@ -482,59 +491,42 @@ public class FibonacciHeap
 
     }
 
-    private static class treeList {
-        public int rank = 0;
-        public treeListNode min;
-        public treeListNode last;
+    private static class fakeNode{
+        public HeapNode node;
+        public int rank;
+        public fakeNode fakeNext;
+        public fakeNode fakeLast;
+        public fakeNode fakeChild;
 
-        public treeList(HeapNode root){
-            this.min = new treeListNode(root);
-            this.last = this.min;
-            this.rank = root.rank;
+        public fakeNode(HeapNode node){
+            this.node = node;
+            this.rank = node.rank;
+            this.fakeNext = this.fakeLast = null;
+            this.fakeChild = null;
         }
 
-        public void insert(treeList tree){
-            if(tree.getMinKey() >= min.node.key){
-                last.setNext(tree.min);
-                last = tree.last;
-             } else {
-                tree.last.setNext(min);
-                min = tree.min;
+        public void makeSon(fakeNode fake){
+            if (fakeChild == null){
+                fakeChild = fakeLast = fake;
+            } else {
+                fakeLast.fakeNext = fake;
+                fakeLast = fakeLast.fakeNext;
             }
             rank++;
         }
 
-        public int getMinKey() {
-            return min.node.key;
+        public HeapNode getRealChildren(){
+            return node.child;
         }
 
-        public HeapNode getChildren(){
-            return min.node.child;
+        public fakeNode getFakeChildren(){
+            return fakeChild;
         }
 
-        public boolean hasNext(){
-            return (min.next != null);
+        public int getMinKey(){
+            return node.key;
         }
 
-        public treeList getNext(){
-            treeListNode next = min.next;
-            treeList nextTree = new treeList(next.node);
-            return nextTree;
-        }
-    }
-
-    private static class treeListNode{
-
-        HeapNode node;
-        treeListNode next = null;
-
-        public treeListNode(HeapNode node){
-            this.node = node;
-        }
-
-        public void setNext(treeListNode node){
-            this.next = node;
-        }
 
     }
 }
